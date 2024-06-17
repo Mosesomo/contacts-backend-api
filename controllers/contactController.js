@@ -4,7 +4,7 @@ const Contact = require('../models/contactsModel');
 
 
 const getContacts = asyncHandler(async (req, res) => {
-    const contacts = await Contact.find();
+    const contacts = await Contact.find({ user_id: req.user.id });
     res.json(contacts);
 });
 
@@ -28,7 +28,8 @@ const createContact = asyncHandler(async (req, res) => {
     const contact = await Contact.create({
         name,
         phone,
-        email
+        email,
+        user_id: req.user.id
     })
 
     res.json(contact);
@@ -41,6 +42,11 @@ const updateContact = asyncHandler(async (req, res) => {
         throw new Error('Not Found');
     }
 
+    if (contact.user_id.toString() !== req.user.id){
+        res.status(403);
+        throw new Error('Not authourized')
+    }
+
     const updatedContact = await Contact.findByIdAndUpdate(
         req.params.id,
         req.body,
@@ -51,13 +57,24 @@ const updateContact = asyncHandler(async (req, res) => {
 });
 
 const deleteContact = asyncHandler(async (req, res) => {
-    const contact = await Contact.findById(req.params.id);
-    if (!contact) {
-        res.status(404);
-        throw new Error('Not Found');
+    try {
+        const contact = await Contact.findById(req.params.id);
+        if (!contact) {
+            res.status(404).json({ message: 'Not Found' });
+            return;
+        }
+        
+        if (contact.user_id.toString() !== req.user.id) {
+            res.status(403);
+            throw new Error('Not authorized');
+        }
+
+        await Contact.deleteOne({ _id: req.params.id });
+        res.status(200).json({ message: 'Deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-    contact.remove();
-    res.json(contact)
 });
 
 module.exports = {

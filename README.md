@@ -1,0 +1,3 @@
+CRUD OPERATION (Contact Manager)
+-----------------------------------------------------------------
+In this project, I learned about performing CRUD (Create, Read, Update, Delete) operations using Node.js and Express. I utilized MongoDB for data storage and database management, which allowed me to effectively handle data persistence and retrieval. Through this experience, I gained a deeper understanding of backend development and how to build robust APIs for web applications

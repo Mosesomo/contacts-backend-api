@@ -39,32 +39,30 @@ const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
         res.status(400);
-        throw new Error("All fields are mandatory!")
+        throw new Error("All fields are mandatory!");
     }
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
     if (user && (await bcrypt.compare(password, user.password))) {
-        const accesToken = jwt.sign(
+        const accessToken = jwt.sign(
             {
                 user: {
                     username: user.username,
                     email: user.email,
-                    id: user.id
+                    id: user.id,
                 },
             },
             process.env.ACCESS_TOKEN,
-            {expiration: '1m'}
-        )
-        console.log(accesToken);
-        res.status(200).json({accesToken})
-
-    } else{
-        res.status(400)
-        throw new Error("please check your email or password!")
+            { expiresIn: '10m' } // Corrected the key
+        );
+        res.status(200).json({ accessToken });
+    } else {
+        res.status(400);
+        throw new Error("Please check your email or password!");
     }
-})
+});
 
 const currentUser = asyncHandler(async (req, res) => {
-    res.json({message: 'Current user'});
+    res.json(req.user);
 })
 
 module.exports = {
